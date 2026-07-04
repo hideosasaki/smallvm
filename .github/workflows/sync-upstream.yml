@@ -1,0 +1,28 @@
+name: Sync upstream
+
+on:
+  schedule:
+    # Every Saturday 6:00 JST (Friday 21:00 UTC)
+    - cron: '0 21 * * 5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch upstream (Bitbucket) and push
+        run: |
+          git remote add upstream https://bitbucket.org/john_maloney/smallvm
+          git fetch upstream dev stable --tags
+          # Fast-forward only: a non-fast-forward push is rejected and fails the job
+          git push origin \
+            refs/remotes/upstream/dev:refs/heads/dev \
+            refs/remotes/upstream/stable:refs/heads/stable
+          git push origin --tags
